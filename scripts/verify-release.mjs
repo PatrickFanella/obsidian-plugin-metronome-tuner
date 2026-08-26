@@ -74,6 +74,7 @@ if (typeof manifest.name === "string" && manifest.name.includes("&")) {
 if (typeof manifest.description === "string") {
   if (manifest.description.length > 250) errors.push("manifest.json: description must be at most 250 characters");
   if (!manifest.description.trim().endsWith(".")) errors.push("manifest.json: description must end with a period");
+  if (/\bobsidian\b/i.test(manifest.description)) errors.push('manifest.json: description must not include the redundant word "Obsidian"');
 }
 if (manifest.fundingUrl !== undefined) {
   try {
@@ -89,6 +90,13 @@ if (typeof manifest.isDesktopOnly !== "boolean") {
 }
 
 await Promise.all(["main.js", "manifest.json", "styles.css"].map(requireNonemptyFile));
+
+try {
+  const styles = await readFile("styles.css", "utf8");
+  if (styles.includes("!important")) errors.push("styles.css: avoid !important; use selector specificity or CSS variables");
+} catch {
+  // Missing styles.css is reported by the release artifact check above.
+}
 
 const ignored = spawnSync("git", ["check-ignore", "--quiet", "--", "main.js"], { stdio: "ignore" });
 if (ignored.error) {

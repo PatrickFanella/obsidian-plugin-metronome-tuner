@@ -403,12 +403,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .metronome-tuner-view *,
-  .metronome-tuner-view *::before,
-  .metronome-tuner-view *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
+  .metronome-tuner-view .beat-marker,
+  .metronome-tuner-view .gauge-needle { transition-duration: 0.01ms; }
 }

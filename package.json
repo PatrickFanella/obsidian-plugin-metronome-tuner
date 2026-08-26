@@ -1,6 +1,6 @@
 {
   "name": "obsidian-metronome-tuner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A metronome and chromatic tuner for Obsidian",
   "private": true,
   "type": "module",
