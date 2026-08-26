@@ -1,0 +1,414 @@
+.metronome-tuner-view {
+  --tempo-tune-accent: var(--interactive-accent);
+  --tempo-tune-surface: var(--background-secondary);
+  --tempo-tune-border: var(--background-modifier-border);
+  container-type: inline-size;
+  min-width: 0;
+  padding: clamp(var(--size-4-3), 4cqi, var(--size-4-6));
+  color: var(--text-normal);
+}
+
+.tempo-tune-header h1 {
+  margin: 0 0 var(--size-4-4);
+  color: var(--text-normal);
+  font-family: var(--font-interface-theme);
+  font-size: clamp(1.45rem, 8cqi, 2.1rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.tempo-tune-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--size-4-1);
+  padding: var(--size-4-1);
+  border: 1px solid var(--tempo-tune-border);
+  border-radius: var(--radius-m);
+  background: var(--tempo-tune-surface);
+}
+
+.tempo-tune-tab {
+  min-width: 0;
+  min-height: 2.5rem;
+  border: 0;
+  box-shadow: none;
+  color: var(--text-muted);
+  background: transparent;
+  font-weight: var(--font-semibold);
+}
+
+.tempo-tune-tab[aria-selected="true"] {
+  color: var(--text-on-accent);
+  background: var(--tempo-tune-accent);
+}
+
+.tempo-tune-panel {
+  min-width: 0;
+  padding-block: clamp(var(--size-4-5), 7cqi, var(--size-4-8));
+  outline: none;
+}
+
+.tempo-tune-panel[hidden] { display: none; }
+
+.tempo-tune-kicker {
+  margin: 0 0 var(--size-4-2);
+  color: var(--text-accent);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.metronome-hero {
+  display: grid;
+  justify-items: center;
+  gap: var(--size-4-4);
+  margin-block: var(--size-4-4) var(--size-4-6);
+}
+
+.bpm-readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  line-height: 0.82;
+  font-variant-numeric: tabular-nums;
+}
+
+.bpm-value {
+  color: var(--text-normal);
+  font-family: var(--font-monospace);
+  font-size: clamp(4rem, 30cqi, 8.5rem);
+  font-weight: 700;
+  letter-spacing: -0.08em;
+}
+
+.bpm-unit {
+  margin-inline-start: var(--size-4-2);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.1em;
+}
+
+.beat-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(5px, 2cqi, 10px);
+  min-height: 1rem;
+}
+
+.beat-marker {
+  width: clamp(8px, 3.5cqi, 13px);
+  height: clamp(8px, 3.5cqi, 13px);
+  border: 2px solid var(--text-faint);
+  border-radius: 50%;
+  background: transparent;
+  transition: transform 90ms ease, background-color 90ms ease, border-color 90ms ease;
+}
+
+.beat-marker.is-accent {
+  border-radius: 2px;
+  transform: rotate(45deg);
+  border-color: var(--text-muted);
+}
+
+.beat-marker.is-current {
+  border-color: var(--tempo-tune-accent);
+  background: var(--tempo-tune-accent);
+  transform: scale(1.35);
+}
+
+.beat-marker.is-accent.is-current { transform: rotate(45deg) scale(1.35); }
+
+.metronome-start,
+.microphone-action {
+  width: 100%;
+  min-height: 3.25rem;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-bold);
+}
+
+.metronome-start.is-running {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+  box-shadow: inset 0 0 0 1px var(--tempo-tune-border);
+}
+
+.tempo-control-group {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--size-4-3);
+  margin-top: var(--size-4-5);
+}
+
+.control-label,
+.field > span,
+.microphone-label,
+.measurement-label {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+}
+
+.tempo-stepper {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(3.5rem, 1fr) 2.5rem;
+  grid-column: 2;
+}
+
+.tempo-stepper button,
+.tempo-stepper input {
+  height: 2.5rem;
+  border-radius: 0;
+  text-align: center;
+}
+
+.tempo-stepper button:first-child { border-radius: var(--input-radius) 0 0 var(--input-radius); }
+.tempo-stepper button:last-child { border-radius: 0 var(--input-radius) var(--input-radius) 0; }
+.tempo-stepper input { min-width: 0; border-inline-width: 0; font-family: var(--font-monospace); }
+.tempo-range { grid-column: 1 / -1; width: 100%; }
+
+.tap-tempo {
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: var(--size-4-3);
+}
+
+.metronome-details {
+  margin-top: var(--size-4-6);
+  border-top: 1px solid var(--tempo-tune-border);
+}
+
+.metronome-details summary {
+  padding-block: var(--size-4-4);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+}
+
+.metronome-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--size-4-4);
+}
+
+.metronome-secondary fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: var(--size-4-4);
+  border: 1px solid var(--tempo-tune-border);
+  border-radius: var(--radius-m);
+}
+
+.metronome-secondary legend {
+  padding-inline: var(--size-4-1);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+}
+
+.meter-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--size-4-3);
+}
+
+.field {
+  display: grid;
+  min-width: 0;
+  gap: var(--size-4-1);
+}
+
+.field input,
+.field select { width: 100%; min-width: 0; }
+
+.toggle-field {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-4);
+  font-size: var(--font-ui-small);
+}
+
+.sound-settings {
+  display: grid;
+  gap: var(--size-4-3);
+}
+
+.sound-settings button { width: 100%; }
+
+.tuner-intro {
+  margin: 0 0 var(--size-4-5);
+  color: var(--text-muted);
+}
+
+.microphone-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--size-4-4);
+  padding: var(--size-4-4);
+  border: 1px solid var(--tempo-tune-border);
+  border-radius: var(--radius-m);
+  background: var(--tempo-tune-surface);
+}
+
+.microphone-status {
+  margin: var(--size-4-1) 0 0;
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.microphone-action { width: auto; min-height: 2.75rem; }
+
+.tuner-display {
+  display: grid;
+  justify-items: center;
+  gap: var(--size-4-5);
+  padding-block: clamp(var(--size-4-6), 10cqi, var(--size-4-10));
+}
+
+.pitch-readout {
+  display: flex;
+  align-items: flex-start;
+  min-height: 1em;
+  font-family: var(--font-monospace);
+  font-size: clamp(4.5rem, 32cqi, 9rem);
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -0.08em;
+}
+
+.pitch-octave {
+  margin-top: 0.1em;
+  color: var(--text-muted);
+  font-size: 0.3em;
+  letter-spacing: 0;
+}
+
+.pitch-measurements {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 22rem);
+}
+
+.pitch-measurements > div {
+  display: grid;
+  justify-items: center;
+  gap: var(--size-4-1);
+  padding-inline: var(--size-4-3);
+}
+
+.pitch-measurements > div + div { border-inline-start: 1px solid var(--tempo-tune-border); }
+.measurement-value { font-family: var(--font-monospace); font-size: var(--font-ui-large); font-weight: var(--font-semibold); }
+.measurement-label { display: block; }
+
+.tuner-gauge { margin-bottom: var(--size-4-6); }
+
+.gauge-scale {
+  position: relative;
+  height: 0.65rem;
+  margin-inline: 3px;
+  border: 1px solid var(--tempo-tune-border);
+  border-radius: var(--radius-s);
+  background: var(--background-modifier-hover);
+}
+
+.gauge-center {
+  position: absolute;
+  inset-block: -5px;
+  left: 50%;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--text-success);
+  transform: translateX(-50%);
+}
+
+.gauge-needle {
+  --cents-position: 50%;
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: var(--cents-position);
+  width: 3px;
+  height: 2rem;
+  border-radius: 2px;
+  background: var(--text-normal);
+  opacity: 0.25;
+  transform: translate(-50%, -50%);
+  transition: left 100ms linear, opacity 100ms ease;
+}
+
+.gauge-needle.has-reading { opacity: 1; }
+
+.gauge-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--size-4-2);
+  color: var(--text-faint);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+}
+
+.cents-description {
+  min-height: 1.5em;
+  margin: var(--size-4-3) 0 0;
+  text-align: center;
+  font-weight: var(--font-semibold);
+}
+
+.tuner-reference {
+  max-width: 12rem;
+  margin-inline: auto;
+  padding-top: var(--size-4-5);
+  border-top: 1px solid var(--tempo-tune-border);
+}
+
+.tempo-tune-tab:focus-visible,
+.tempo-tune-panel:focus-visible,
+.metronome-tuner-view button:focus-visible,
+.metronome-tuner-view input:focus-visible,
+.metronome-tuner-view select:focus-visible,
+.metronome-tuner-view summary:focus-visible {
+  outline: 2px solid var(--tempo-tune-accent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@container (max-width: 430px) {
+  .metronome-secondary { grid-template-columns: minmax(0, 1fr); }
+  .microphone-card { grid-template-columns: minmax(0, 1fr); }
+  .microphone-action { width: 100%; }
+}
+
+@container (max-width: 280px) {
+  .metronome-tuner-view { padding-inline: var(--size-4-2); }
+  .tempo-control-group { grid-template-columns: minmax(0, 1fr); }
+  .tempo-stepper { grid-column: 1; }
+  .meter-row { grid-template-columns: minmax(0, 1fr); }
+  .pitch-measurements { grid-template-columns: minmax(0, 1fr); gap: var(--size-4-3); }
+  .pitch-measurements > div + div { border-inline-start: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metronome-tuner-view *,
+  .metronome-tuner-view *::before,
+  .metronome-tuner-view *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

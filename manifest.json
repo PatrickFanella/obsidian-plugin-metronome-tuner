@@ -1,0 +1,9 @@
+{
+  "id": "metronome-tuner",
+  "name": "Metronome & Tuner",
+  "version": "1.0.0",
+  "minAppVersion": "1.7.2",
+  "description": "A precise metronome and chromatic tuner inside Obsidian.",
+  "author": "Onnwee",
+  "isDesktopOnly": false
+}
