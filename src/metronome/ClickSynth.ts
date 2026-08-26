@@ -43,7 +43,10 @@ export class ClickSynth {
         if (ended) return;
         try {
           oscillator.stop();
-        } catch {}
+        } catch {
+          finish();
+          return;
+        }
         finish();
       },
       onEnded: (listener) => {

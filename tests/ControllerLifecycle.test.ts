@@ -17,10 +17,11 @@ describe("TunerController lifecycle", () => {
   it("stops an acquired stream when cancelled while audio context startup is pending", async () => {
     const context = deferred<AudioContext>();
     const stop = vi.fn();
+    const removeEventListener = vi.fn();
     const track = {
       stop,
       addEventListener: vi.fn(),
-      removeEventListener: vi.fn()
+      removeEventListener
     } as unknown as MediaStreamTrack;
     const stream = { getTracks: () => [track] } as unknown as MediaStream;
     vi.stubGlobal("navigator", { mediaDevices: { getUserMedia: vi.fn().mockResolvedValue(stream) } });
@@ -34,7 +35,7 @@ describe("TunerController lifecycle", () => {
     tuner.stop(owner);
 
     expect(stop).toHaveBeenCalledOnce();
-    expect(track.removeEventListener).toHaveBeenCalledOnce();
+    expect(removeEventListener).toHaveBeenCalledOnce();
     context.resolve({} as AudioContext);
     await starting;
     expect(tuner.status).toBe("idle");
@@ -44,6 +45,7 @@ describe("TunerController lifecycle", () => {
     const oldContext = deferred<AudioContext>();
     const oldStop = vi.fn();
     const newStop = vi.fn();
+    const newAddEventListener = vi.fn();
     const newRemoveEventListener = vi.fn();
     const oldTrack = {
       stop: oldStop,
@@ -52,7 +54,7 @@ describe("TunerController lifecycle", () => {
     } as unknown as MediaStreamTrack;
     const newTrack = {
       stop: newStop,
-      addEventListener: vi.fn(),
+      addEventListener: newAddEventListener,
       removeEventListener: newRemoveEventListener
     } as unknown as MediaStreamTrack;
     const oldStream = { getTracks: () => [oldTrack] } as unknown as MediaStream;
@@ -63,7 +65,8 @@ describe("TunerController lifecycle", () => {
       disconnect: vi.fn(),
       getFloatTimeDomainData: vi.fn()
     } as unknown as AnalyserNode;
-    const source = { connect: vi.fn(), disconnect: vi.fn() } as unknown as MediaStreamAudioSourceNode;
+    const sourceDisconnect = vi.fn();
+    const source = { connect: vi.fn(), disconnect: sourceDisconnect } as unknown as MediaStreamAudioSourceNode;
     const currentContext = {
       sampleRate: 48000,
       createAnalyser: vi.fn(() => analyser),
@@ -87,7 +90,7 @@ describe("TunerController lifecycle", () => {
 
     await tuner.start(owner);
     expect(tuner.status).toBe("listening");
-    expect(newTrack.addEventListener).toHaveBeenCalledOnce();
+    expect(newAddEventListener).toHaveBeenCalledOnce();
 
     oldContext.resolve(currentContext);
     await cancelledStart;
@@ -95,7 +98,7 @@ describe("TunerController lifecycle", () => {
     expect(oldStop).toHaveBeenCalledOnce();
     expect(newStop).not.toHaveBeenCalled();
     expect(newRemoveEventListener).not.toHaveBeenCalled();
-    expect(source.disconnect).not.toHaveBeenCalled();
+    expect(sourceDisconnect).not.toHaveBeenCalled();
     expect(tuner.status).toBe("listening");
 
     tuner.stop(owner);

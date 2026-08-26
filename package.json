@@ -1,21 +1,49 @@
 {
   "name": "obsidian-metronome-tuner",
   "version": "1.0.0",
-  "description": "A metronome and chromatic tuner for Obsidian.",
+  "description": "A metronome and chromatic tuner for Obsidian",
+  "private": true,
   "type": "module",
+  "main": "main.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/patrickfanella/obsidian-plugin-metronome-tuner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/patrickfanella/obsidian-plugin-metronome-tuner/issues"
+  },
+  "homepage": "https://github.com/patrickfanella/obsidian-plugin-metronome-tuner#readme",
+  "engines": {
+    "node": ">=24"
+  },
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "metronome",
+    "tuner",
+    "music"
+  ],
   "scripts": {
     "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "build": "node esbuild.config.mjs production",
+    "build:clean": "node scripts/clean-build.mjs",
+    "lint": "eslint .",
     "test": "vitest run",
     "typecheck": "tsc -noEmit",
+    "check": "npm run lint && npm test && npm run typecheck && npm run build:clean",
+    "verify:release": "npm run check && node scripts/verify-release.mjs",
     "version": "node version-bump.mjs && git add manifest.json versions.json"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "builtin-modules": "^4.0.0",
     "esbuild": "^0.28.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-obsidianmd": "^0.4.2",
+    "globals": "^16.5.0",
     "obsidian": "^1.7.2",
     "typescript": "^5.7.2",
+    "typescript-eslint": "^8.68.0",
     "vitest": "^4.1.11"
   }
 }

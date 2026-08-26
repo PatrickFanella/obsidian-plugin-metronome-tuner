@@ -98,7 +98,9 @@ export class TunerController {
       }
 
       const contextResult = await contextResultPromise;
-      if (contextResult.error) throw contextResult.error;
+      if (contextResult.error) {
+        throw contextResult.error instanceof Error ? contextResult.error : new Error("Could not start audio context.");
+      }
       const context = contextResult.context;
       if (!context) throw new Error("Could not start audio.");
       if (this.activeSession !== session) {

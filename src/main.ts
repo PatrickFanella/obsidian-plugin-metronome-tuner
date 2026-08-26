@@ -19,8 +19,8 @@ export default class MetronomeTunerPlugin extends Plugin {
     this.metronome = new MetronomeController(this.audio, this.settings.metronome);
     this.tuner = new TunerController(this.audio, this.settings.tunerA4);
     this.registerView(VIEW_TYPE_METRONOME_TUNER, (leaf) => new MetronomeTunerView(leaf, this));
-    this.addRibbonIcon("audio-waveform", "Open Metronome & Tuner", () => void this.activateView());
-    this.addCommand({ id: "open-metronome-tuner", name: "Open Metronome & Tuner", callback: () => void this.activateView() });
+    this.addRibbonIcon("audio-waveform", "Open metronome & tuner", () => void this.activateView());
+    this.addCommand({ id: "open-view", name: "Open", callback: () => void this.activateView() });
     this.addCommand({ id: "start-metronome", name: "Start metronome", callback: () => void this.metronome.start().catch((error: unknown) => new Notice(errorMessage(error))) });
     this.addCommand({ id: "stop-metronome", name: "Stop metronome", callback: () => this.metronome.stop() });
     this.addSettingTab(new MetronomeTunerSettingTab(this.app, this));

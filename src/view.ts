@@ -29,7 +29,7 @@ export class MetronomeTunerView extends ItemView {
   }
 
   getViewType(): string { return VIEW_TYPE_METRONOME_TUNER; }
-  getDisplayText(): string { return "Tempo & Tune"; }
+  getDisplayText(): string { return "Tempo & tune"; }
   getIcon(): string { return "audio-waveform"; }
 
   async onOpen(): Promise<void> {
@@ -62,7 +62,7 @@ export class MetronomeTunerView extends ItemView {
     const root = this.contentEl;
     root.empty();
     root.addClass("metronome-tuner-view");
-    root.createEl("header", { cls: "tempo-tune-header" }).createEl("h1", { text: "Tempo & Tune" });
+    root.createEl("header", { cls: "tempo-tune-header" }).createEl("h1", { text: "Tempo & tune" });
 
     const tabList = root.createDiv({ cls: "tempo-tune-tabs", attr: { role: "tablist", "aria-label": "Tempo and tuning tools" } });
     const panels = root.createDiv({ cls: "tempo-tune-panels" });
@@ -110,8 +110,8 @@ export class MetronomeTunerView extends ItemView {
     });
     this.listen(this.startButton, "click", () => void this.toggleMetronome());
 
-    const tempoGroup = panel.createEl("div", { cls: "tempo-control-group", attr: { role: "group", "aria-labelledby": `${this.idPrefix}-tempo-label` } });
-    tempoGroup.createEl("span", { cls: "control-label", text: "Tempo", attr: { id: `${this.idPrefix}-tempo-label` } });
+    const tempoGroup = panel.createDiv({ cls: "tempo-control-group", attr: { role: "group", "aria-labelledby": `${this.idPrefix}-tempo-label` } });
+    tempoGroup.createSpan({ cls: "control-label", text: "Tempo", attr: { id: `${this.idPrefix}-tempo-label` } });
     const stepper = tempoGroup.createDiv({ cls: "tempo-stepper" });
     const minus = stepper.createEl("button", { text: "−", attr: { type: "button", "aria-label": "Decrease tempo" } });
     const bpm = stepper.createEl("input", { type: "number", attr: { "aria-label": "Tempo in beats per minute", inputmode: "numeric" } });
@@ -209,7 +209,7 @@ export class MetronomeTunerView extends ItemView {
 
     const micCard = panel.createDiv({ cls: "microphone-card" });
     const micCopy = micCard.createDiv();
-    micCopy.createEl("span", { cls: "microphone-label", text: "Microphone" });
+    micCopy.createSpan({ cls: "microphone-label", text: "Microphone" });
     micCopy.createEl("p", { cls: "microphone-status", attr: { "data-tuner-status": "", role: "status", "aria-live": "polite", "aria-atomic": "true" } });
     const tunerButton = micCard.createEl("button", { cls: "microphone-action mod-cta", attr: { type: "button", "data-tuner-action": "" } });
     this.listen(tunerButton, "click", () => this.toggleTuner());
@@ -370,7 +370,7 @@ export class MetronomeTunerView extends ItemView {
       octave.setText("");
       frequency.setText("—");
       confidence.setText("—");
-      needle.style.setProperty("--cents-position", "50%");
+      needle.setCssProps({ "--cents-position": "50%" });
       needle.toggleClass("has-reading", false);
       gauge.setAttr("aria-valuenow", "0");
       gauge.setAttr("aria-valuetext", status === "listening" ? "No signal" : "Tuner inactive");
@@ -384,7 +384,7 @@ export class MetronomeTunerView extends ItemView {
     octave.setText(String(reading.octave));
     frequency.setText(`${reading.frequency.toFixed(1)} Hz`);
     confidence.setText(`${Math.round(reading.confidence * 100)}%`);
-    needle.style.setProperty("--cents-position", `${cents + 50}%`);
+    needle.setCssProps({ "--cents-position": `${cents + 50}%` });
     needle.toggleClass("has-reading", true);
     gauge.setAttr("aria-valuenow", String(cents));
     gauge.setAttr("aria-valuetext", centsText);

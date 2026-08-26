@@ -21,7 +21,7 @@ describe("beatDurationSeconds", () => {
 describe("MetronomeScheduler", () => {
   it("skips overdue beats without resetting the beat index", () => {
     vi.useFakeTimers();
-    vi.stubGlobal("window", globalThis);
+    vi.stubGlobal("window", { setInterval, clearInterval, setTimeout, clearTimeout });
     const clock = { currentTime: 0 };
     const context = clock as AudioContext;
     const beats: Array<{ index: number; time: number }> = [];
