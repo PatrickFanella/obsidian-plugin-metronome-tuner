@@ -36,11 +36,11 @@
     "version": "node version-bump.mjs && git add manifest.json versions.json"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^26.4.0",
     "esbuild": "^0.28.2",
-    "eslint": "^9.39.5",
+    "eslint": "^10.9.1",
     "eslint-plugin-obsidianmd": "^0.4.2",
-    "globals": "^16.5.0",
+    "globals": "^17.11.0",
     "obsidian": "^1.7.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.68.0",
