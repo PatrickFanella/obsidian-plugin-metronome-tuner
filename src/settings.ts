@@ -9,6 +9,7 @@ export type { MetronomeSettings, PluginSettings } from "./settingsParsing";
 import { isLanguagePreference, isToneId } from "./settingsParsing";
 
 const DENOMINATORS: readonly MeterDenominator[] = [2, 4, 8, 16];
+const LANGUAGE_SETTING_SELECTOR = "[data-metronome-tuner-language-setting]";
 
 interface AboutLink {
   name: MessageKey | "Subcult" | "GitHub";
@@ -60,6 +61,7 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
   }
 
   getSettingDefinitions(): SettingDefinitionItem[] {
+    this.setContainerLanguage();
     return [
       {
         type: "group",
@@ -84,6 +86,7 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
   }
 
   display(): void {
+    this.setContainerLanguage();
     this.containerEl.empty();
 
     new Setting(this.containerEl).setName(this.plugin.i18n.t("general")).setHeading();
@@ -97,6 +100,35 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
     new Setting(this.containerEl).setName(this.plugin.i18n.t("aboutSupport")).setHeading();
     for (const link of ABOUT_LINKS) {
       this.configureAboutLink(new Setting(this.containerEl), link);
+    }
+  }
+
+  refreshLanguage(): void {
+    const scrollTop = this.containerEl.scrollTop;
+    const activeElement = this.containerEl.ownerDocument.activeElement;
+    const restoreLanguageFocus = activeElement !== null
+      && this.containerEl.querySelector(LANGUAGE_SETTING_SELECTOR)?.contains(activeElement) === true;
+
+    this.setContainerLanguage();
+    const update: unknown = Reflect.get(this, "update");
+    const refresh: unknown = typeof update === "function" ? update : Reflect.get(this, "display");
+    if (typeof refresh === "function") Reflect.apply(refresh, this, []);
+
+    const restoreState = (): boolean => {
+      this.containerEl.scrollTop = scrollTop;
+      const languageSelect = this.containerEl.querySelector<HTMLSelectElement>(`${LANGUAGE_SETTING_SELECTOR} select`);
+      if (restoreLanguageFocus && !languageSelect) return false;
+      if (restoreLanguageFocus) languageSelect?.focus();
+      return true;
+    };
+
+    if (!restoreState()) {
+      let remainingFrames = 2;
+      const restoreAfterRender = (): void => {
+        remainingFrames -= 1;
+        if (!restoreState() && remainingFrames > 0) window.requestAnimationFrame(restoreAfterRender);
+      };
+      window.requestAnimationFrame(restoreAfterRender);
     }
   }
 
@@ -125,6 +157,7 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
   }
 
   private configureLanguage(setting: Setting): void {
+    setting.settingEl.dataset.metronomeTunerLanguageSetting = "";
     setting.addDropdown((dropdown) => {
       dropdown.addOption("auto", this.plugin.i18n.t("automaticObsidian"));
       for (const locale of LANGUAGE_LOCALE_ORDER) {
@@ -138,6 +171,10 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
           }
         });
     });
+  }
+
+  private setContainerLanguage(): void {
+    this.containerEl.lang = this.plugin.i18n.locale;
   }
 
   private addDefaultSettings(): void {

@@ -40,6 +40,21 @@ describe("dictionaries", () => {
     }
   });
 
+  it.each([
+    ["en", "Automatic follows Obsidian's language."],
+    ["de", "Automatisch folgt der Sprache von Obsidian."],
+    ["es", "El modo automático sigue el idioma de Obsidian."],
+    ["fr", "Le mode automatique suit la langue d’Obsidian."],
+    ["it", "La modalità automatica segue la lingua di Obsidian."],
+    ["pt-BR", "O modo automático segue o idioma do Obsidian."],
+    ["nl", "Automatisch volgt de taal van Obsidian."],
+    ["pl", "Tryb automatyczny używa języka Obsidian."],
+    ["hr", "Automatski način prati jezik Obsidiana."],
+    ["zh-CN", "自动模式跟随 Obsidian 的语言。"],
+  ] as const)("describes automatic language selection without a restart in %s", (locale, description) => {
+    expect(createTranslator(locale).t("languageDesc")).toBe(description);
+  });
+
   it("interpolates known named placeholders and preserves missing ones", () => {
     const i18n = createTranslator("en");
     expect(i18n.t("bpmAria", { bpm: 120 })).toBe("120 beats per minute");

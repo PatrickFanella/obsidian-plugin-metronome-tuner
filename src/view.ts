@@ -14,7 +14,8 @@ let viewId = 0;
 
 export class MetronomeTunerView extends ItemView {
   private activeTab: TabName = "metronome";
-  private abortController: AbortController | null = null;
+  private lifecycleAbortController: AbortController | null = null;
+  private renderAbortController: AbortController | null = null;
   private unsubscribeMetronome: (() => void) | null = null;
   private tunerTimer: number | null = null;
   private lastTunerStatus = "";
@@ -34,21 +35,23 @@ export class MetronomeTunerView extends ItemView {
   getIcon(): string { return "audio-waveform"; }
 
   async onOpen(): Promise<void> {
-    this.abortController = new AbortController();
+    this.lifecycleAbortController = new AbortController();
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") {
         this.plugin.tuner.stop(this.tunerOwner);
         this.updateTunerReading(true);
       }
-    }, { signal: this.abortController.signal });
+    }, { signal: this.lifecycleAbortController.signal });
     this.render();
     this.unsubscribeMetronome = this.plugin.metronome.subscribe((state) => this.updateMetronomeState(state));
     this.tunerTimer = window.setInterval(() => this.updateTunerReading(), 100);
   }
 
   async onClose(): Promise<void> {
-    this.abortController?.abort();
-    this.abortController = null;
+    this.lifecycleAbortController?.abort();
+    this.lifecycleAbortController = null;
+    this.renderAbortController?.abort();
+    this.renderAbortController = null;
     this.unsubscribeMetronome?.();
     this.unsubscribeMetronome = null;
     if (this.tunerTimer !== null) window.clearInterval(this.tunerTimer);
@@ -59,10 +62,21 @@ export class MetronomeTunerView extends ItemView {
     this.contentEl.empty();
   }
 
+  refreshLanguage(): void {
+    this.lastTunerStatus = "";
+    this.lastTunerAnnouncement = "";
+    this.lastTunerAnnouncedAt = 0;
+    this.render();
+  }
+
   private render(): void {
+    this.renderAbortController?.abort();
+    this.renderAbortController = new AbortController();
     const root = this.contentEl;
+    const metronomeDetailsOpen = root.querySelector<HTMLDetailsElement>("[data-metronome-details]")?.open ?? true;
     root.empty();
     root.addClass("metronome-tuner-view");
+    root.lang = this.plugin.i18n.locale;
     root.createEl("header", { cls: "tempo-tune-header" }).createEl("h1", { text: this.plugin.i18n.t("appName") });
 
     const tabList = root.createDiv({ cls: "tempo-tune-tabs", attr: { role: "tablist", "aria-label": this.plugin.i18n.t("toolsAria") } });
@@ -83,7 +97,7 @@ export class MetronomeTunerView extends ItemView {
       });
       tabs.push(tab);
       this.listen(tab, "click", () => this.selectTab(tabName, tabs, panels));
-      if (tabName === "metronome") this.renderMetronome(panel);
+      if (tabName === "metronome") this.renderMetronome(panel, metronomeDetailsOpen);
       else this.renderTuner(panel);
     }
 
@@ -93,7 +107,7 @@ export class MetronomeTunerView extends ItemView {
     this.updateTunerReading(true);
   }
 
-  private renderMetronome(panel: HTMLElement): void {
+  private renderMetronome(panel: HTMLElement, detailsOpen: boolean): void {
     panel.addClass("metronome-panel");
     panel.createEl("p", { cls: "tempo-tune-kicker", text: this.plugin.i18n.t("keepTime") });
 
@@ -149,8 +163,11 @@ export class MetronomeTunerView extends ItemView {
       if (tapped !== null) setTempo(tapped);
     });
 
-    const details = panel.createEl("details", { cls: "metronome-details" });
-    details.open = true;
+    const details = panel.createEl("details", {
+      cls: "metronome-details",
+      attr: { "data-metronome-details": "" },
+    });
+    details.open = detailsOpen;
     details.createEl("summary", { text: this.plugin.i18n.t("meterSound") });
     const secondary = details.createDiv({ cls: "metronome-secondary" });
     const meterFieldset = secondary.createEl("fieldset", { cls: "meter-settings" });
@@ -430,7 +447,7 @@ export class MetronomeTunerView extends ItemView {
   }
 
   private listen<K extends keyof HTMLElementEventMap>(element: HTMLElement, type: K, listener: (event: HTMLElementEventMap[K]) => void): void {
-    element.addEventListener(type, listener, { signal: this.abortController?.signal });
+    element.addEventListener(type, listener, { signal: this.renderAbortController?.signal });
   }
 
   private showAudioError(error: unknown, key: "errorMetronome" | "errorPreview"): void {
