@@ -1,12 +1,12 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type { SettingDefinition, SettingDefinitionItem } from "obsidian";
 import type MetronomeTunerPlugin from "./main";
-import { toneName, type MessageKey } from "./i18n";
+import { LANGUAGE_LOCALE_ORDER, LANGUAGE_NAMES, toneName, type MessageKey } from "./i18n";
 import type { MeterDenominator } from "./metronome/types";
 import { TONE_PRESETS } from "./metronome/TonePresets";
-export { DEFAULT_SETTINGS, isToneId, parseSettings } from "./settingsParsing";
+export { DEFAULT_SETTINGS, isLanguagePreference, isToneId, parseSettings } from "./settingsParsing";
 export type { MetronomeSettings, PluginSettings } from "./settingsParsing";
-import { isToneId } from "./settingsParsing";
+import { isLanguagePreference, isToneId } from "./settingsParsing";
 
 const DENOMINATORS: readonly MeterDenominator[] = [2, 4, 8, 16];
 
@@ -63,6 +63,11 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
     return [
       {
         type: "group",
+        heading: this.plugin.i18n.t("general"),
+        items: [this.getLanguageDefinition()],
+      },
+      {
+        type: "group",
         heading: this.plugin.i18n.t("defaults"),
         items: this.getDefaultDefinitions(),
       },
@@ -81,6 +86,11 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
   display(): void {
     this.containerEl.empty();
 
+    new Setting(this.containerEl).setName(this.plugin.i18n.t("general")).setHeading();
+    this.configureLanguage(new Setting(this.containerEl)
+      .setName(this.plugin.i18n.t("language"))
+      .setDesc(this.plugin.i18n.t("languageDesc")));
+
     new Setting(this.containerEl).setName(this.plugin.i18n.t("defaults")).setHeading();
     this.addDefaultSettings();
 
@@ -88,6 +98,19 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
     for (const link of ABOUT_LINKS) {
       this.configureAboutLink(new Setting(this.containerEl), link);
     }
+  }
+
+  private getLanguageDefinition(): SettingDefinition {
+    const name = this.plugin.i18n.t("language");
+    const description = this.plugin.i18n.t("languageDesc");
+    return {
+      name,
+      desc: description,
+      render: (setting: Setting) => {
+        setting.setName(name).setDesc(description);
+        this.configureLanguage(setting);
+      },
+    };
   }
 
   private getDefaultDefinitions(): SettingDefinition[] {
@@ -99,6 +122,22 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
         spec.configure(setting);
       },
     }));
+  }
+
+  private configureLanguage(setting: Setting): void {
+    setting.addDropdown((dropdown) => {
+      dropdown.addOption("auto", this.plugin.i18n.t("automaticObsidian"));
+      for (const locale of LANGUAGE_LOCALE_ORDER) {
+        dropdown.addOption(locale, LANGUAGE_NAMES[locale]);
+      }
+      dropdown
+        .setValue(this.plugin.settings.language)
+        .onChange((value) => {
+          if (isLanguagePreference(value)) {
+            void this.plugin.updateSettings({ ...this.plugin.settings, language: value });
+          }
+        });
+    });
   }
 
   private addDefaultSettings(): void {

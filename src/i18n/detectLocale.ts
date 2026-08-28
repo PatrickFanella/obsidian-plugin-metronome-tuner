@@ -1,5 +1,12 @@
 import * as Obsidian from "obsidian";
-import { resolveLocale, type Locale } from "../i18n";
+import { resolveLocale, type LanguagePreference, type Locale } from "../i18n";
+
+export function resolveLanguagePreference(
+  preference: LanguagePreference,
+  detector: () => Locale = detectLocale,
+): Locale {
+  return preference === "auto" ? detector() : preference;
+}
 
 export function detectLocale(): Locale {
   try {

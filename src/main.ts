@@ -1,7 +1,7 @@
 import { Notice, Plugin } from "obsidian";
 import { AudioRuntime } from "./audio/AudioRuntime";
 import { createTranslator, type Translator } from "./i18n";
-import { detectLocale } from "./i18n/detectLocale";
+import { resolveLanguagePreference } from "./i18n/detectLocale";
 import { MetronomeController } from "./metronome/MetronomeController";
 import type { TonePresetId } from "./metronome/types";
 import { DEFAULT_SETTINGS, MetronomeTunerSettingTab, parseSettings, type PluginSettings } from "./settings";
@@ -17,9 +17,9 @@ export default class MetronomeTunerPlugin extends Plugin {
   private saveQueue: Promise<void> = Promise.resolve();
 
   async onload(): Promise<void> {
-    this.i18n = createTranslator(detectLocale());
     const loadedSettings: unknown = await this.loadData();
     this.settings = parseSettings(loadedSettings);
+    this.i18n = createTranslator(resolveLanguagePreference(this.settings.language));
     this.metronome = new MetronomeController(this.audio, this.settings.metronome);
     this.tuner = new TunerController(this.audio, this.settings.tunerA4);
     this.registerView(VIEW_TYPE_METRONOME_TUNER, (leaf) => new MetronomeTunerView(leaf, this));

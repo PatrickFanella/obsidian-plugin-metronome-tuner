@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { Locale } from "../src/i18n";
 
 afterEach(() => {
   vi.doUnmock("obsidian");
@@ -15,7 +16,29 @@ async function detectWith(getLanguage: unknown, momentLocale: unknown): Promise<
   return detectLocale();
 }
 
+async function loadLanguagePreferenceResolver() {
+  vi.doMock("obsidian", () => ({ moment: { locale: undefined } }));
+  const { resolveLanguagePreference } = await import("../src/i18n/detectLocale");
+  return resolveLanguagePreference;
+}
+
 describe("locale detection", () => {
+  it("calls the detector for automatic language preference", async () => {
+    const detector = vi.fn((): Locale => "de");
+    const resolveLanguagePreference = await loadLanguagePreferenceResolver();
+
+    expect(resolveLanguagePreference("auto", detector)).toBe("de");
+    expect(detector).toHaveBeenCalledOnce();
+  });
+
+  it("returns an explicit locale without calling the detector", async () => {
+    const detector = vi.fn((): Locale => "de");
+    const resolveLanguagePreference = await loadLanguagePreferenceResolver();
+
+    expect(resolveLanguagePreference("fr", detector)).toBe("fr");
+    expect(detector).not.toHaveBeenCalled();
+  });
+
   it("prefers Obsidian getLanguage", async () => {
     vi.stubGlobal("navigator", { language: "fr-FR" });
     expect(await detectWith(() => "de-DE", () => "es-ES")).toBe("de");

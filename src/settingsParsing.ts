@@ -1,5 +1,6 @@
 import { TONE_PRESETS } from "./metronome/TonePresets";
 import type { MeterDenominator, TonePresetId } from "./metronome/types";
+import { SUPPORTED_LOCALES, type LanguagePreference } from "./i18n";
 
 export interface MetronomeSettings {
   bpm: number;
@@ -11,11 +12,13 @@ export interface MetronomeSettings {
 }
 
 export interface PluginSettings {
+  language: LanguagePreference;
   metronome: MetronomeSettings;
   tunerA4: number;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
+  language: "auto",
   metronome: { bpm: 120, meterNumerator: 4, meterDenominator: 4, accent: true, volume: 0.65, tone: "woodblock" },
   tunerA4: 440
 };
@@ -23,6 +26,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 export function parseSettings(value: unknown): PluginSettings {
   if (!isRecord(value)) return structuredClone(DEFAULT_SETTINGS);
   return {
+    language: isLanguagePreference(value.language) ? value.language : DEFAULT_SETTINGS.language,
     metronome: parseMetronomeSettings(value.metronome),
     tunerA4: boundedInteger(value.tunerA4, 415, 466, DEFAULT_SETTINGS.tunerA4)
   };
@@ -58,4 +62,8 @@ function isMeterDenominator(value: unknown): value is MeterDenominator {
 
 export function isToneId(value: unknown): value is TonePresetId {
   return typeof value === "string" && TONE_PRESETS.some((preset) => preset.id === value);
+}
+
+export function isLanguagePreference(value: unknown): value is LanguagePreference {
+  return value === "auto" || (typeof value === "string" && SUPPORTED_LOCALES.some((locale) => locale === value));
 }

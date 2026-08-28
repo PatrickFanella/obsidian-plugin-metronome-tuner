@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { beatMeasureMessage, centsDescription, createTranslator, DICTIONARIES, resolveLocale, SUPPORTED_LOCALES } from "../src/i18n";
+import { beatMeasureMessage, centsDescription, createTranslator, DICTIONARIES, LANGUAGE_LOCALE_ORDER, LANGUAGE_NAMES, resolveLocale, SUPPORTED_LOCALES } from "../src/i18n";
 
 describe("locale resolution", () => {
   it.each([
@@ -22,6 +22,11 @@ describe("locale resolution", () => {
 });
 
 describe("dictionaries", () => {
+  it("keeps language options aligned with supported locales", () => {
+    expect(new Set(LANGUAGE_LOCALE_ORDER)).toEqual(new Set(SUPPORTED_LOCALES));
+    expect(Object.keys(LANGUAGE_NAMES)).toEqual(expect.arrayContaining([...SUPPORTED_LOCALES]));
+  });
+
   it("contains every English key with matching placeholders", () => {
     const englishMessages = Object.values(DICTIONARIES.en);
     const placeholders = (message: string) => [...message.matchAll(/\{\{(\w+)\}\}/g)].map((match) => match[1]).sort();
