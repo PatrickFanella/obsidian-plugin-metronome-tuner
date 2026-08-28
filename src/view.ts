@@ -1,5 +1,6 @@
 import { ItemView, Notice, WorkspaceLeaf } from "obsidian";
 import type MetronomeTunerPlugin from "./main";
+import { beatMeasureMessage, centsDescription, toneName, tunerErrorMessage } from "./i18n";
 import { TONE_PRESETS } from "./metronome/TonePresets";
 import type { MetronomeState, MeterDenominator } from "./metronome/types";
 import { isToneId } from "./settings";
@@ -29,7 +30,7 @@ export class MetronomeTunerView extends ItemView {
   }
 
   getViewType(): string { return VIEW_TYPE_METRONOME_TUNER; }
-  getDisplayText(): string { return "Tempo & tune"; }
+  getDisplayText(): string { return this.plugin.i18n.t("appName"); }
   getIcon(): string { return "audio-waveform"; }
 
   async onOpen(): Promise<void> {
@@ -62,9 +63,9 @@ export class MetronomeTunerView extends ItemView {
     const root = this.contentEl;
     root.empty();
     root.addClass("metronome-tuner-view");
-    root.createEl("header", { cls: "tempo-tune-header" }).createEl("h1", { text: "Tempo & tune" });
+    root.createEl("header", { cls: "tempo-tune-header" }).createEl("h1", { text: this.plugin.i18n.t("appName") });
 
-    const tabList = root.createDiv({ cls: "tempo-tune-tabs", attr: { role: "tablist", "aria-label": "Tempo and tuning tools" } });
+    const tabList = root.createDiv({ cls: "tempo-tune-tabs", attr: { role: "tablist", "aria-label": this.plugin.i18n.t("toolsAria") } });
     const panels = root.createDiv({ cls: "tempo-tune-panels" });
     const tabs: HTMLButtonElement[] = [];
 
@@ -73,7 +74,7 @@ export class MetronomeTunerView extends ItemView {
       const panelId = `${this.idPrefix}-${tabName}-panel`;
       const tab = tabList.createEl("button", {
         cls: "tempo-tune-tab",
-        text: tabName === "metronome" ? "Metronome" : "Tuner",
+        text: this.plugin.i18n.t(tabName),
         attr: { id: tabId, role: "tab", "aria-controls": panelId, type: "button" }
       });
       const panel = panels.createEl("section", {
@@ -94,33 +95,33 @@ export class MetronomeTunerView extends ItemView {
 
   private renderMetronome(panel: HTMLElement): void {
     panel.addClass("metronome-panel");
-    panel.createEl("p", { cls: "tempo-tune-kicker", text: "Keep time" });
+    panel.createEl("p", { cls: "tempo-tune-kicker", text: this.plugin.i18n.t("keepTime") });
 
     const hero = panel.createDiv({ cls: "metronome-hero" });
-    const readout = hero.createDiv({ cls: "bpm-readout", attr: { "aria-label": `${this.plugin.settings.metronome.bpm} beats per minute` } });
-    readout.createSpan({ cls: "bpm-value", text: String(this.plugin.settings.metronome.bpm), attr: { "data-bpm-readout": "" } });
-    readout.createSpan({ cls: "bpm-unit", text: "BPM" });
-    const beatGroup = hero.createDiv({ cls: "beat-group", attr: { "aria-label": "Beats in measure" } });
+    const readout = hero.createDiv({ cls: "bpm-readout", attr: { "aria-label": this.plugin.i18n.t("bpmAria", { bpm: this.plugin.i18n.number(this.plugin.settings.metronome.bpm) }) } });
+    readout.createSpan({ cls: "bpm-value", text: this.plugin.i18n.number(this.plugin.settings.metronome.bpm), attr: { "data-bpm-readout": "" } });
+    readout.createSpan({ cls: "bpm-unit", text: this.plugin.i18n.t("bpmUnit") });
+    const beatGroup = hero.createDiv({ cls: "beat-group", attr: { "aria-label": this.plugin.i18n.t("beatsInMeasure") } });
     this.renderBeatMarkers(beatGroup);
 
     this.startButton = panel.createEl("button", {
       cls: "metronome-start mod-cta",
-      text: this.plugin.metronome.running ? "Stop metronome" : "Start metronome",
+      text: this.plugin.i18n.t(this.plugin.metronome.running ? "stopMetronome" : "startMetronome"),
       attr: { type: "button", "aria-pressed": String(this.plugin.metronome.running) }
     });
     this.listen(this.startButton, "click", () => void this.toggleMetronome());
 
     const tempoGroup = panel.createDiv({ cls: "tempo-control-group", attr: { role: "group", "aria-labelledby": `${this.idPrefix}-tempo-label` } });
-    tempoGroup.createSpan({ cls: "control-label", text: "Tempo", attr: { id: `${this.idPrefix}-tempo-label` } });
+    tempoGroup.createSpan({ cls: "control-label", text: this.plugin.i18n.t("tempo"), attr: { id: `${this.idPrefix}-tempo-label` } });
     const stepper = tempoGroup.createDiv({ cls: "tempo-stepper" });
-    const minus = stepper.createEl("button", { text: "−", attr: { type: "button", "aria-label": "Decrease tempo" } });
-    const bpm = stepper.createEl("input", { type: "number", attr: { "aria-label": "Tempo in beats per minute", inputmode: "numeric" } });
+    const minus = stepper.createEl("button", { text: "−", attr: { type: "button", "aria-label": this.plugin.i18n.t("decreaseTempo") } });
+    const bpm = stepper.createEl("input", { type: "number", attr: { "aria-label": this.plugin.i18n.t("tempoBpm"), inputmode: "numeric" } });
     bpm.min = "30";
     bpm.max = "300";
     bpm.step = "1";
     bpm.value = String(this.plugin.settings.metronome.bpm);
-    const plus = stepper.createEl("button", { text: "+", attr: { type: "button", "aria-label": "Increase tempo" } });
-    const range = tempoGroup.createEl("input", { type: "range", cls: "tempo-range", attr: { "aria-label": "Tempo slider" } });
+    const plus = stepper.createEl("button", { text: "+", attr: { type: "button", "aria-label": this.plugin.i18n.t("increaseTempo") } });
+    const range = tempoGroup.createEl("input", { type: "range", cls: "tempo-range", attr: { "aria-label": this.plugin.i18n.t("tempoSlider") } });
     range.min = "30";
     range.max = "300";
     range.step = "1";
@@ -142,7 +143,7 @@ export class MetronomeTunerView extends ItemView {
     });
     this.listen(range, "change", () => setTempo(Number(range.value)));
 
-    const tap = panel.createEl("button", { cls: "tap-tempo", text: "Tap tempo", attr: { type: "button" } });
+    const tap = panel.createEl("button", { cls: "tap-tempo", text: this.plugin.i18n.t("tapTempo"), attr: { type: "button" } });
     this.listen(tap, "click", () => {
       const tapped = this.plugin.metronome.tap();
       if (tapped !== null) setTempo(tapped);
@@ -150,18 +151,18 @@ export class MetronomeTunerView extends ItemView {
 
     const details = panel.createEl("details", { cls: "metronome-details" });
     details.open = true;
-    details.createEl("summary", { text: "Meter & sound" });
+    details.createEl("summary", { text: this.plugin.i18n.t("meterSound") });
     const secondary = details.createDiv({ cls: "metronome-secondary" });
     const meterFieldset = secondary.createEl("fieldset", { cls: "meter-settings" });
-    meterFieldset.createEl("legend", { text: "Time signature" });
+    meterFieldset.createEl("legend", { text: this.plugin.i18n.t("timeSignature") });
     const meterRow = meterFieldset.createDiv({ cls: "meter-row" });
-    const numerator = this.createLabeledInput(meterRow, "Numerator", "number");
+    const numerator = this.createLabeledInput(meterRow, this.plugin.i18n.t("numerator"), "number");
     numerator.min = "1";
     numerator.max = "16";
     numerator.step = "1";
     numerator.value = String(this.plugin.settings.metronome.meterNumerator);
     const denominatorWrap = meterRow.createEl("label", { cls: "field" });
-    denominatorWrap.createSpan({ text: "Denominator" });
+    denominatorWrap.createSpan({ text: this.plugin.i18n.t("denominator") });
     const denominator = denominatorWrap.createEl("select");
     for (const value of [2, 4, 8, 16]) denominator.createEl("option", { text: String(value), value: String(value) });
     denominator.value = String(this.plugin.settings.metronome.meterDenominator);
@@ -176,40 +177,40 @@ export class MetronomeTunerView extends ItemView {
     const accentLabel = meterFieldset.createEl("label", { cls: "toggle-field" });
     const accent = accentLabel.createEl("input", { type: "checkbox" });
     accent.checked = this.plugin.settings.metronome.accent;
-    accentLabel.createSpan({ text: "Accent first beat" });
+    accentLabel.createSpan({ text: this.plugin.i18n.t("accentFirstBeat") });
     this.listen(accent, "change", () => {
       void this.updateMetronomeSettings({ accent: accent.checked });
       this.renderBeatMarkers(beatGroup);
     });
 
     const soundFieldset = secondary.createEl("fieldset", { cls: "sound-settings" });
-    soundFieldset.createEl("legend", { text: "Click sound" });
+    soundFieldset.createEl("legend", { text: this.plugin.i18n.t("clickSound") });
     const toneLabel = soundFieldset.createEl("label", { cls: "field" });
-    toneLabel.createSpan({ text: "Sound" });
+    toneLabel.createSpan({ text: this.plugin.i18n.t("sound") });
     const tone = toneLabel.createEl("select");
-    for (const preset of TONE_PRESETS) tone.createEl("option", { text: preset.name, value: preset.id });
+    for (const preset of TONE_PRESETS) tone.createEl("option", { text: toneName(this.plugin.i18n, preset.id), value: preset.id });
     tone.value = this.plugin.settings.metronome.tone;
     this.listen(tone, "change", () => { if (isToneId(tone.value)) void this.plugin.setTone(tone.value); });
     const volumeLabel = soundFieldset.createEl("label", { cls: "field" });
-    volumeLabel.createSpan({ text: "Volume" });
+    volumeLabel.createSpan({ text: this.plugin.i18n.t("volume") });
     const volume = volumeLabel.createEl("input", { type: "range" });
     volume.min = "0";
     volume.max = "1";
     volume.step = "0.01";
     volume.value = String(this.plugin.settings.metronome.volume);
     this.listen(volume, "change", () => void this.updateMetronomeSettings({ volume: Number(volume.value) }));
-    const preview = soundFieldset.createEl("button", { text: "Preview sound", attr: { type: "button" } });
-    this.listen(preview, "click", () => void this.plugin.metronome.preview().catch((error: unknown) => this.showAudioError(error, "Could not preview the click sound.")));
+    const preview = soundFieldset.createEl("button", { text: this.plugin.i18n.t("previewSound"), attr: { type: "button" } });
+    this.listen(preview, "click", () => void this.plugin.metronome.preview().catch((error: unknown) => this.showAudioError(error, "errorPreview")));
   }
 
   private renderTuner(panel: HTMLElement): void {
     panel.addClass("tuner-panel");
-    panel.createEl("p", { cls: "tempo-tune-kicker", text: "Find the pitch" });
-    panel.createEl("p", { cls: "tuner-intro", text: "Play one clear note near your microphone." });
+    panel.createEl("p", { cls: "tempo-tune-kicker", text: this.plugin.i18n.t("findPitch") });
+    panel.createEl("p", { cls: "tuner-intro", text: this.plugin.i18n.t("tunerIntro") });
 
     const micCard = panel.createDiv({ cls: "microphone-card" });
     const micCopy = micCard.createDiv();
-    micCopy.createSpan({ cls: "microphone-label", text: "Microphone" });
+    micCopy.createSpan({ cls: "microphone-label", text: this.plugin.i18n.t("microphone") });
     micCopy.createEl("p", { cls: "microphone-status", attr: { "data-tuner-status": "", role: "status", "aria-live": "polite", "aria-atomic": "true" } });
     const tunerButton = micCard.createEl("button", { cls: "microphone-action mod-cta", attr: { type: "button", "data-tuner-action": "" } });
     this.listen(tunerButton, "click", () => this.toggleTuner());
@@ -221,24 +222,24 @@ export class MetronomeTunerView extends ItemView {
     const measurements = display.createDiv({ cls: "pitch-measurements" });
     const frequency = measurements.createDiv();
     frequency.createSpan({ cls: "measurement-value", text: "—", attr: { "data-frequency": "" } });
-    frequency.createSpan({ cls: "measurement-label", text: "Frequency" });
+    frequency.createSpan({ cls: "measurement-label", text: this.plugin.i18n.t("frequency") });
     const confidence = measurements.createDiv();
     confidence.createSpan({ cls: "measurement-value", text: "—", attr: { "data-confidence": "" } });
-    confidence.createSpan({ cls: "measurement-label", text: "Confidence" });
+    confidence.createSpan({ cls: "measurement-label", text: this.plugin.i18n.t("confidence") });
 
     const gauge = panel.createDiv({ cls: "tuner-gauge" });
     const scale = gauge.createDiv({
       cls: "gauge-scale",
-      attr: { role: "meter", "aria-label": "Pitch accuracy", "aria-valuemin": "-50", "aria-valuemax": "50", "aria-valuenow": "0", "aria-valuetext": "No pitch detected", "data-gauge": "" }
+      attr: { role: "meter", "aria-label": this.plugin.i18n.t("pitchAccuracy"), "aria-valuemin": "-50", "aria-valuemax": "50", "aria-valuenow": "0", "aria-valuetext": this.plugin.i18n.t("noPitchDetected"), "data-gauge": "" }
     });
     scale.createDiv({ cls: "gauge-center" });
     scale.createDiv({ cls: "gauge-needle", attr: { "data-gauge-needle": "" } });
     const ticks = gauge.createDiv({ cls: "gauge-ticks", attr: { "aria-hidden": "true" } });
     for (const label of ["−50", "−25", "0", "+25", "+50"]) ticks.createSpan({ text: label });
-    gauge.createEl("p", { cls: "cents-description", text: "Waiting for a note", attr: { "data-cents-description": "" } });
+    gauge.createEl("p", { cls: "cents-description", text: this.plugin.i18n.t("waitingNote"), attr: { "data-cents-description": "" } });
 
     const reference = panel.createDiv({ cls: "tuner-reference" });
-    const a4 = this.createLabeledInput(reference, "A4 reference (Hz)", "number");
+    const a4 = this.createLabeledInput(reference, this.plugin.i18n.t("a4ReferenceHz"), "number");
     a4.min = "415";
     a4.max = "466";
     a4.step = "1";
@@ -291,7 +292,7 @@ export class MetronomeTunerView extends ItemView {
     try {
       await this.plugin.metronome.toggle();
     } catch (error: unknown) {
-      this.showAudioError(error, "Could not start the metronome.");
+      this.showAudioError(error, "errorMetronome");
     }
   }
 
@@ -310,7 +311,7 @@ export class MetronomeTunerView extends ItemView {
 
   private updateMetronomeState(state: MetronomeState): void {
     if (this.startButton) {
-      this.startButton.setText(state.running ? "Stop metronome" : "Start metronome");
+      this.startButton.setText(this.plugin.i18n.t(state.running ? "stopMetronome" : "startMetronome"));
       this.startButton.setAttr("aria-pressed", String(state.running));
       this.startButton.toggleClass("is-running", state.running);
     }
@@ -321,7 +322,7 @@ export class MetronomeTunerView extends ItemView {
     container.empty();
     this.beatMarkers = [];
     const { meterNumerator, accent } = this.plugin.settings.metronome;
-    container.setAttr("aria-label", `${meterNumerator} beats per measure${accent ? ", first beat accented" : ""}`);
+    container.setAttr("aria-label", beatMeasureMessage(this.plugin.i18n, meterNumerator, accent));
     for (let index = 0; index < meterNumerator; index++) {
       const marker = container.createSpan({
         cls: `beat-marker${accent && index === 0 ? " is-accent" : ""}`,
@@ -341,17 +342,17 @@ export class MetronomeTunerView extends ItemView {
     const activeElsewhere = (status === "starting" || status === "listening") && !this.plugin.tuner.isOwnedBy(this.tunerOwner);
     const reading = this.plugin.tuner.reading;
     const error = this.plugin.tuner.error;
-    const statusText = activeElsewhere ? "Microphone active in another Tempo & Tune view." : error ?? (status === "starting"
-      ? "Requesting microphone permission…"
+    const statusText = activeElsewhere ? this.plugin.i18n.t("micOtherView") : error ? tunerErrorMessage(this.plugin.i18n, error) : (status === "starting"
+      ? this.plugin.i18n.t("micRequesting")
       : status === "listening"
-        ? reading ? "Microphone active." : "Listening for a steady note…"
-        : "Microphone off. Start listening to tune.");
+        ? reading ? this.plugin.i18n.t("micActive") : this.plugin.i18n.t("micListening")
+        : this.plugin.i18n.t("micOff"));
     if (statusText !== this.lastTunerStatus) {
       statusElement.setText(statusText);
       this.lastTunerStatus = statusText;
     }
     button.disabled = activeElsewhere;
-    button.setText(activeElsewhere ? "Microphone in use" : status === "starting" ? "Cancel microphone request" : status === "listening" ? "Stop listening" : status === "error" ? "Try microphone again" : "Use microphone");
+    button.setText(this.plugin.i18n.t(activeElsewhere ? "micInUse" : status === "starting" ? "micCancel" : status === "listening" ? "micStop" : status === "error" ? "micTryAgain" : "micUse"));
 
     const note = this.contentEl.querySelector<HTMLElement>("[data-note]");
     const octave = this.contentEl.querySelector<HTMLElement>("[data-octave]");
@@ -373,8 +374,8 @@ export class MetronomeTunerView extends ItemView {
       needle.setCssProps({ "--cents-position": "50%" });
       needle.toggleClass("has-reading", false);
       gauge.setAttr("aria-valuenow", "0");
-      gauge.setAttr("aria-valuetext", status === "listening" ? "No signal" : "Tuner inactive");
-      description.setText(status === "listening" ? "No signal yet" : "Waiting for a note");
+      gauge.setAttr("aria-valuetext", this.plugin.i18n.t(status === "listening" ? "noSignal" : "tunerInactive"));
+      description.setText(this.plugin.i18n.t(status === "listening" ? "noSignalYet" : "waitingNote"));
       return;
     }
 
@@ -382,15 +383,15 @@ export class MetronomeTunerView extends ItemView {
     const centsText = this.centsDescription(reading.cents);
     note.setText(reading.note);
     octave.setText(String(reading.octave));
-    frequency.setText(`${reading.frequency.toFixed(1)} Hz`);
-    confidence.setText(`${Math.round(reading.confidence * 100)}%`);
+    frequency.setText(this.plugin.i18n.t("frequencyValue", { value: this.plugin.i18n.number(reading.frequency, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }));
+    confidence.setText(this.plugin.i18n.t("percentValue", { value: this.plugin.i18n.number(Math.round(reading.confidence * 100)) }));
     needle.setCssProps({ "--cents-position": `${cents + 50}%` });
     needle.toggleClass("has-reading", true);
     gauge.setAttr("aria-valuenow", String(cents));
     gauge.setAttr("aria-valuetext", centsText);
     description.setText(centsText);
 
-    const announcement = `${reading.note}${reading.octave}, ${centsText}`;
+    const announcement = this.plugin.i18n.t("readingAnnouncement", { note: `${reading.note}${reading.octave}`, cents: centsText });
     const now = performance.now();
     if ((forceAnnouncement || now - this.lastTunerAnnouncedAt >= 1500) && announcement !== this.lastTunerAnnouncement) {
       this.contentEl.querySelector<HTMLElement>("[data-tuner-live]")?.setText(announcement);
@@ -400,16 +401,14 @@ export class MetronomeTunerView extends ItemView {
   }
 
   private centsDescription(cents: number): string {
-    if (Math.abs(cents) <= 2) return "In tune";
-    const amount = Math.abs(Math.round(cents));
-    return `${amount} ${amount === 1 ? "cent" : "cents"} ${cents < 0 ? "flat" : "sharp"}`;
+    return centsDescription(this.plugin.i18n, cents);
   }
 
   private setBpmReadout(value: number): void {
     const readout = this.contentEl.querySelector<HTMLElement>("[data-bpm-readout]");
     if (readout) {
-      readout.setText(String(value));
-      readout.parentElement?.setAttr("aria-label", `${value} beats per minute`);
+      readout.setText(this.plugin.i18n.number(value));
+      readout.parentElement?.setAttr("aria-label", this.plugin.i18n.t("bpmAria", { bpm: this.plugin.i18n.number(value) }));
     }
   }
 
@@ -434,7 +433,8 @@ export class MetronomeTunerView extends ItemView {
     element.addEventListener(type, listener, { signal: this.abortController?.signal });
   }
 
-  private showAudioError(error: unknown, fallback: string): void {
-    new Notice(error instanceof Error ? error.message : fallback);
+  private showAudioError(error: unknown, key: "errorMetronome" | "errorPreview"): void {
+    console.error(this.plugin.i18n.t(key), error);
+    new Notice(this.plugin.i18n.t(key));
   }
 }

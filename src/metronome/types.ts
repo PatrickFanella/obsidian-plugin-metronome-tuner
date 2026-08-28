@@ -16,7 +16,6 @@ export type TonePresetId =
 
 export interface TonePreset {
   id: TonePresetId;
-  name: string;
   waveform: OscillatorType;
   frequency: number;
   accentFrequency: number;

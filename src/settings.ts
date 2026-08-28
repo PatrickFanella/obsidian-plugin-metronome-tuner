@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type { SettingDefinition, SettingDefinitionItem } from "obsidian";
 import type MetronomeTunerPlugin from "./main";
+import { toneName, type MessageKey } from "./i18n";
 import type { MeterDenominator } from "./metronome/types";
 import { TONE_PRESETS } from "./metronome/TonePresets";
 export { DEFAULT_SETTINGS, isToneId, parseSettings } from "./settingsParsing";
@@ -10,9 +11,9 @@ import { isToneId } from "./settingsParsing";
 const DENOMINATORS: readonly MeterDenominator[] = [2, 4, 8, 16];
 
 interface AboutLink {
-  name: string;
-  description: string;
-  label: string;
+  name: MessageKey | "Subcult" | "GitHub";
+  descriptionKey: MessageKey;
+  labelKey: MessageKey;
   href: string;
   external?: boolean;
 }
@@ -25,30 +26,30 @@ interface SettingSpec {
 
 const ABOUT_LINKS: readonly AboutLink[] = [
   {
-    name: "Portfolio",
-    description: "Selected work by Patrick Fanella.",
-    label: "Visit portfolio",
+    name: "portfolio",
+    descriptionKey: "portfolioDesc",
+    labelKey: "visitPortfolio",
     href: "https://patrickfanella.co",
     external: true,
   },
   {
     name: "Subcult",
-    description: "Music, film, and independent culture projects.",
-    label: "Visit Subcult",
+    descriptionKey: "subcultDesc",
+    labelKey: "visitSubcult",
     href: "https://subcult.tv",
     external: true,
   },
   {
     name: "GitHub",
-    description: "Browse Patrick's open-source work.",
-    label: "View GitHub",
+    descriptionKey: "githubDesc",
+    labelKey: "viewGithub",
     href: "https://github.com/patrickfanella",
     external: true,
   },
   {
-    name: "Email",
-    description: "Questions, feedback, or collaboration.",
-    label: "Send email",
+    name: "email",
+    descriptionKey: "emailDesc",
+    labelKey: "sendEmail",
     href: "mailto:patrick@subcult.tv",
   },
 ];
@@ -62,15 +63,15 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
     return [
       {
         type: "group",
-        heading: "Defaults",
+        heading: this.plugin.i18n.t("defaults"),
         items: this.getDefaultDefinitions(),
       },
       {
         type: "group",
-        heading: "About & support",
+        heading: this.plugin.i18n.t("aboutSupport"),
         items: ABOUT_LINKS.map((link) => ({
-          name: link.name,
-          desc: link.description,
+          name: this.aboutLinkName(link),
+          desc: this.plugin.i18n.t(link.descriptionKey),
           render: (setting: Setting) => this.configureAboutLink(setting, link),
         })),
       },
@@ -80,10 +81,10 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
   display(): void {
     this.containerEl.empty();
 
-    new Setting(this.containerEl).setName("Defaults").setHeading();
+    new Setting(this.containerEl).setName(this.plugin.i18n.t("defaults")).setHeading();
     this.addDefaultSettings();
 
-    new Setting(this.containerEl).setName("About & support").setHeading();
+    new Setting(this.containerEl).setName(this.plugin.i18n.t("aboutSupport")).setHeading();
     for (const link of ABOUT_LINKS) {
       this.configureAboutLink(new Setting(this.containerEl), link);
     }
@@ -112,38 +113,38 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
   private getDefaultSettings(): SettingSpec[] {
     return [
       {
-        name: "Default tempo",
-        description: "Tempo used when Obsidian starts.",
+        name: this.plugin.i18n.t("defaultTempo"),
+        description: this.plugin.i18n.t("defaultTempoDesc"),
         configure: (setting) => this.configureDefaultTempo(setting),
       },
       {
-        name: "A4 reference",
-        description: "Concert pitch in hertz.",
+        name: this.plugin.i18n.t("a4Reference"),
+        description: this.plugin.i18n.t("a4ReferenceDesc"),
         configure: (setting) => this.configureA4Reference(setting),
       },
       {
-        name: "Meter numerator",
-        description: "Number of beats in each measure.",
+        name: this.plugin.i18n.t("meterNumerator"),
+        description: this.plugin.i18n.t("meterNumeratorDesc"),
         configure: (setting) => this.configureMeterNumerator(setting),
       },
       {
-        name: "Meter denominator",
-        description: "Note value represented by each beat.",
+        name: this.plugin.i18n.t("meterDenominator"),
+        description: this.plugin.i18n.t("meterDenominatorDesc"),
         configure: (setting) => this.configureMeterDenominator(setting),
       },
       {
-        name: "Accent first beat",
-        description: "Emphasize the first beat of each measure.",
+        name: this.plugin.i18n.t("accentFirstBeat"),
+        description: this.plugin.i18n.t("accentFirstBeatDesc"),
         configure: (setting) => this.configureAccent(setting),
       },
       {
-        name: "Click volume",
-        description: "Set the metronome's startup volume.",
+        name: this.plugin.i18n.t("clickVolume"),
+        description: this.plugin.i18n.t("clickVolumeDesc"),
         configure: (setting) => this.configureClickVolume(setting),
       },
       {
-        name: "Click sound",
-        description: "Choose the metronome's startup sound.",
+        name: this.plugin.i18n.t("clickSound"),
+        description: this.plugin.i18n.t("clickSoundDesc"),
         configure: (setting) => this.configureClickSound(setting),
       },
     ];
@@ -240,7 +241,7 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
   private configureClickSound(setting: Setting): void {
     setting.addDropdown((dropdown) => {
       for (const preset of TONE_PRESETS) {
-        dropdown.addOption(preset.id, preset.name);
+        dropdown.addOption(preset.id, toneName(this.plugin.i18n, preset.id));
       }
       dropdown
         .setValue(this.plugin.settings.metronome.tone)
@@ -256,9 +257,9 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
   }
 
   private configureAboutLink(setting: Setting, link: AboutLink): void {
-    setting.setName(link.name).setDesc(link.description);
+    setting.setName(this.aboutLinkName(link)).setDesc(this.plugin.i18n.t(link.descriptionKey));
     const anchor = setting.controlEl.createEl("a", {
-      text: link.label,
+      text: this.plugin.i18n.t(link.labelKey),
       href: link.href,
     });
 
@@ -268,6 +269,10 @@ export class MetronomeTunerSettingTab extends PluginSettingTab {
         rel: "noopener noreferrer",
       });
     }
+  }
+
+  private aboutLinkName(link: AboutLink): string {
+    return link.name === "Subcult" || link.name === "GitHub" ? link.name : this.plugin.i18n.t(link.name);
   }
 }
 

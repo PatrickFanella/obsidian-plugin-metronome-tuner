@@ -8,6 +8,23 @@ const SMOOTHING_WINDOW = 5;
 const READING_HOLD_MS = 550;
 const DEFAULT_A4 = 440;
 
+export type TunerErrorCode =
+  | "mediaUnavailable"
+  | "permission"
+  | "noDevice"
+  | "busy"
+  | "unsupportedConstraints"
+  | "audioContext"
+  | "audioStart"
+  | "disconnected"
+  | "unknown";
+
+class TunerStartError extends Error {
+  constructor(readonly code: TunerErrorCode) {
+    super(code);
+  }
+}
+
 export class TunerOwner {
   private readonly identity = Symbol();
 
@@ -35,7 +52,7 @@ export class TunerController {
   private midiPitches: number[] = [];
   private lastReliableAt = 0;
   private statusValue: TunerStatus = "idle";
-  private errorValue: string | null = null;
+  private errorValue: TunerErrorCode | null = null;
   private readingValue: TunerReading | null = null;
   private activeSession: TunerSession | null = null;
 
@@ -44,7 +61,7 @@ export class TunerController {
   }
 
   get status(): TunerStatus { return this.statusValue; }
-  get error(): string | null { return this.errorValue; }
+  get error(): TunerErrorCode | null { return this.errorValue; }
   get reading(): TunerReading | null { return this.readingValue; }
 
   isOwnedBy(owner: TunerOwner): boolean {
@@ -76,7 +93,7 @@ export class TunerController {
     this.errorValue = null;
 
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error("Microphone access is not available on this device.");
+      if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) throw new TunerStartError("mediaUnavailable");
       // Creating/resuming here, before the first await, preserves mobile user activation.
       const contextResultPromise = this.audio.getContext().then(
         (context) => ({ context, error: null }),
@@ -99,10 +116,11 @@ export class TunerController {
 
       const contextResult = await contextResultPromise;
       if (contextResult.error) {
-        throw contextResult.error instanceof Error ? contextResult.error : new Error("Could not start audio context.");
+        console.error("Could not start tuner audio context", contextResult.error);
+        throw new TunerStartError("audioContext");
       }
       const context = contextResult.context;
-      if (!context) throw new Error("Could not start audio.");
+      if (!context) throw new TunerStartError("audioStart");
       if (this.activeSession !== session) {
         this.stopResources(session.resources);
         return false;
@@ -125,7 +143,7 @@ export class TunerController {
       if (this.activeSession !== session) return false;
       this.activeSession = null;
       this.statusValue = "error";
-      this.errorValue = microphoneErrorMessage(error);
+      this.errorValue = categorizeTunerError(error);
       return false;
     }
   }
@@ -198,7 +216,7 @@ export class TunerController {
     this.readingValue = null;
     this.midiPitches = [];
     this.statusValue = "error";
-    this.errorValue = "The microphone disconnected. Reconnect it and try again.";
+    this.errorValue = "disconnected";
   }
 }
 
@@ -206,12 +224,13 @@ function sanitizeA4(value: number): number {
   return Number.isFinite(value) ? Math.min(466, Math.max(415, value)) : DEFAULT_A4;
 }
 
-function microphoneErrorMessage(error: unknown): string {
+export function categorizeTunerError(error: unknown): TunerErrorCode {
+  if (error instanceof TunerStartError) return error.code;
   if (error instanceof DOMException) {
-    if (error.name === "NotAllowedError" || error.name === "SecurityError") return "Microphone permission was denied. Allow microphone access in your system or Obsidian settings.";
-    if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") return "No microphone was found. Connect an input device and try again.";
-    if (error.name === "NotReadableError" || error.name === "TrackStartError") return "The microphone is busy or unavailable. Close other audio apps and try again.";
-    if (error.name === "OverconstrainedError") return "The microphone does not support the requested audio settings.";
+    if (error.name === "NotAllowedError" || error.name === "SecurityError") return "permission";
+    if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") return "noDevice";
+    if (error.name === "NotReadableError" || error.name === "TrackStartError") return "busy";
+    if (error.name === "OverconstrainedError") return "unsupportedConstraints";
   }
-  return error instanceof Error ? error.message : "Could not start the microphone.";
+  return "unknown";
 }

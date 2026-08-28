@@ -1,5 +1,7 @@
 import { Notice, Plugin } from "obsidian";
 import { AudioRuntime } from "./audio/AudioRuntime";
+import { createTranslator, type Translator } from "./i18n";
+import { detectLocale } from "./i18n/detectLocale";
 import { MetronomeController } from "./metronome/MetronomeController";
 import type { TonePresetId } from "./metronome/types";
 import { DEFAULT_SETTINGS, MetronomeTunerSettingTab, parseSettings, type PluginSettings } from "./settings";
@@ -11,18 +13,23 @@ export default class MetronomeTunerPlugin extends Plugin {
   readonly audio = new AudioRuntime();
   metronome!: MetronomeController;
   tuner!: TunerController;
+  i18n!: Translator;
   private saveQueue: Promise<void> = Promise.resolve();
 
   async onload(): Promise<void> {
+    this.i18n = createTranslator(detectLocale());
     const loadedSettings: unknown = await this.loadData();
     this.settings = parseSettings(loadedSettings);
     this.metronome = new MetronomeController(this.audio, this.settings.metronome);
     this.tuner = new TunerController(this.audio, this.settings.tunerA4);
     this.registerView(VIEW_TYPE_METRONOME_TUNER, (leaf) => new MetronomeTunerView(leaf, this));
-    this.addRibbonIcon("audio-waveform", "Open metronome & tuner", () => void this.activateView());
-    this.addCommand({ id: "open-view", name: "Open", callback: () => void this.activateView() });
-    this.addCommand({ id: "start-metronome", name: "Start metronome", callback: () => void this.metronome.start().catch((error: unknown) => new Notice(errorMessage(error))) });
-    this.addCommand({ id: "stop-metronome", name: "Stop metronome", callback: () => this.metronome.stop() });
+    this.addRibbonIcon("audio-waveform", this.i18n.t("openView"), () => void this.activateView());
+    this.addCommand({ id: "open-view", name: this.i18n.t("commandOpen"), callback: () => void this.activateView() });
+    this.addCommand({ id: "start-metronome", name: this.i18n.t("commandStart"), callback: () => void this.metronome.start().catch((error: unknown) => {
+      console.error("Could not start metronome", error);
+      new Notice(this.i18n.t("errorMetronome"));
+    }) });
+    this.addCommand({ id: "stop-metronome", name: this.i18n.t("commandStop"), callback: () => this.metronome.stop() });
     this.addSettingTab(new MetronomeTunerSettingTab(this.app, this));
   }
 
@@ -58,8 +65,4 @@ export default class MetronomeTunerPlugin extends Plugin {
   async setTone(tone: TonePresetId): Promise<void> {
     await this.updateSettings({ ...this.settings, metronome: { ...this.settings.metronome, tone } });
   }
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Could not start the metronome.";
 }

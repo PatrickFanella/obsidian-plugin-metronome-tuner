@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AudioRuntime } from "../src/audio/AudioRuntime";
 import { MetronomeController } from "../src/metronome/MetronomeController";
-import { TunerController, TunerOwner } from "../src/tuner/TunerController";
+import { categorizeTunerError, TunerController, TunerOwner } from "../src/tuner/TunerController";
 
 function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
   let resolve!: (value: T) => void;
@@ -14,6 +14,20 @@ afterEach(() => {
 });
 
 describe("TunerController lifecycle", () => {
+  it.each([
+    ["NotAllowedError", "permission"],
+    ["SecurityError", "permission"],
+    ["NotFoundError", "noDevice"],
+    ["NotReadableError", "busy"],
+    ["OverconstrainedError", "unsupportedConstraints"],
+  ])("categorizes %s microphone errors", (name, expected) => {
+    expect(categorizeTunerError(new DOMException("native detail", name))).toBe(expected);
+  });
+
+  it("does not expose unknown native error messages", () => {
+    expect(categorizeTunerError(new Error("native detail"))).toBe("unknown");
+  });
+
   it("stops an acquired stream when cancelled while audio context startup is pending", async () => {
     const context = deferred<AudioContext>();
     const stop = vi.fn();
