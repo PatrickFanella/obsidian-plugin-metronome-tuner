@@ -1,5 +1,14 @@
 # Metronome + Tuner
 
+<a href="https://subcult.tv">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/subcult-dark.svg">
+    <img src="docs/brand/subcult-light.svg" alt="SUBCULT" width="400">
+  </picture>
+</a>
+
+[SUBCULT](https://subcult.tv) · [Support on Patreon](https://patreon.com/subcult)
+
 Metronome + Tuner adds timing and chromatic tuning tools to Obsidian.
 
 <img src="docs/metronome-view.png" alt="Metronome + Tuner view in Obsidian with tempo controls and beat indicators" width="720">
@@ -84,6 +93,13 @@ Do not publish a generated draft without manual verification.
 
 ## Support and issues
 
-Created by [Patrick Fanella](https://patrickfanella.co). Find more work at [Subcult](https://subcult.tv) and [GitHub](https://github.com/patrickfanella). Support is available through Obsidian's native funding link.
+Questions or feedback? Email [patrick@subcult.tv](mailto:patrick@subcult.tv). Report bugs or request features in [Gitea Issues](https://git.subcult.tv/PatrickFanella/obsidian-plugin-metronome-tuner/issues).
 
-Questions or feedback? Email [patrick@subcult.tv](mailto:patrick@subcult.tv). Report bugs or request features in [GitHub Issues](https://github.com/patrickfanella/obsidian-plugin-metronome-tuner/issues).
+## About SUBCULT and support
+
+Made by [Patrick Fanella](https://patrickfanella.co) as part of
+[SUBCULT](https://subcult.tv). Explore the tools and projects at
+**[subcult.tv](https://subcult.tv)**.
+
+If this plugin is useful to you, **[support SUBCULT on Patreon](https://patreon.com/subcult)**
+to help fund its development and the wider project.
