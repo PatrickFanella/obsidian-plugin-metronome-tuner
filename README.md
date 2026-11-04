@@ -1,11 +1,9 @@
 # Metronome + Tuner
 
-<a href="https://subcult.tv">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/subcult-dark.svg">
-    <img src="docs/brand/subcult-light.svg" alt="SUBCULT" width="400">
-  </picture>
-</a>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/mark-mono-dark.svg">
+  <img src="docs/brand/lockup.svg" alt="Metronome + Tuner logo. A metronome: a tall trapezoid outline with a diagonal pendulum and a bob circle, and a short tick scale on its right side for the tuner." height="80">
+</picture>
 
 [SUBCULT](https://subcult.tv) · [Support on Patreon](https://patreon.com/subcult)
 
@@ -96,6 +94,13 @@ Do not publish a generated draft without manual verification.
 Questions or feedback? Email [patrick@subcult.tv](mailto:patrick@subcult.tv). Report bugs or request features in [Gitea Issues](https://git.subcult.tv/PatrickFanella/obsidian-plugin-metronome-tuner/issues).
 
 ## About SUBCULT and support
+
+<a href="https://subcult.tv">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/subcult-dark.svg">
+    <img src="docs/brand/subcult-light.svg" alt="SUBCULT" width="240">
+  </picture>
+</a>
 
 Made by [Patrick Fanella](https://patrickfanella.co) as part of
 [SUBCULT](https://subcult.tv). Explore the tools and projects at
