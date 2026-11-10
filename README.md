@@ -7,33 +7,34 @@
 
 [SUBCULT](https://subcult.tv) · [Support on Patreon](https://patreon.com/subcult)
 
-Metronome + Tuner adds timing and chromatic tuning tools to Obsidian.
+Metronome + Tuner is an [Obsidian](https://obsidian.md) plugin that adds a metronome and a chromatic tuner in a side view, so you can practise with your notes open. It works in Obsidian 1.7.2 or later on desktop and mobile. The current release is 1.3.0, and the plugin is listed in Obsidian's community plugins.
 
 <img src="docs/metronome-view.png" alt="Metronome + Tuner view in Obsidian with tempo controls and beat indicators" width="720">
 
 ## Features
 
-- Metronome from 30 to 300 BPM with **Tap tempo**, configurable time signature, first-beat accent, volume, and seven click sounds
-- Chromatic tuner with frequency, confidence, cents, and note readouts
-- Configurable A4 reference from 415 to 466 Hz
-- Keyboard-accessible tabs and controls
-- Desktop and mobile support
+- Metronome from 30 to 300 BPM with tap tempo, time signatures from 1 to 16 beats over 2, 4, 8 or 16, an optional first-beat accent, volume, and seven click sounds (woodblock, mechanical, rimshot, claves, cowbell, soft digital, sine pulse).
+- Chromatic tuner that shows the note, its frequency, how many cents sharp or flat you are, and how confident the reading is.
+- A4 reference adjustable from 415 to 466 Hz.
+- Keyboard-accessible tabs and controls. Space starts and stops the metronome when focus is not on a control.
+- Interface in English, German, Spanish, French, Croatian, Italian, Dutch, Polish, Brazilian Portuguese and Simplified Chinese. It follows Obsidian's language by default, and you can pick a language in settings without restarting.
+- Commands: **Open**, **Start metronome** and **Stop metronome**.
 
-## Privacy
+### Microphone and privacy
 
-The plugin requests microphone access only after you select **Use microphone**. It analyzes microphone audio locally and does not record, store, transmit, or play that audio. Microphone permission and availability depend on the device, operating system, and Obsidian mobile platform.
+The tuner asks for microphone access only after you select **Use microphone**. It analyses the audio on your device and does not record, store, send or play it. Whether the microphone is available depends on your device, operating system and the Obsidian mobile app.
 
-## Install
+## Quick start
 
-After the plugin is accepted into the Obsidian marketplace:
+### Install from Obsidian
 
-1. Open **Settings → Community plugins** in Obsidian.
+1. Open **Settings → Community plugins**.
 2. Select **Browse**, search for **Metronome + Tuner**, and select **Install**.
 3. Select **Enable**.
 
-### Manual install
+### Install manually
 
-Download `main.js`, `manifest.json`, and `styles.css` from a release. Copy them into:
+Download `main.js`, `manifest.json` and `styles.css` from a [release](https://github.com/PatrickFanella/obsidian-plugin-metronome-tuner/releases) and copy them into:
 
 ```text
 <vault>/.obsidian/plugins/metronome-tuner/
@@ -41,70 +42,63 @@ Download `main.js`, `manifest.json`, and `styles.css` from a release. Copy them 
 
 Restart Obsidian, then enable **Metronome + Tuner** under **Settings → Community plugins**.
 
-## Usage
+### Use it
 
-Select the ribbon icon or run **Open** to open the **Tempo & tune** view.
+Select the ribbon icon or run the **Open** command to open the **Tempo & tune** view.
 
-- In **Metronome**, set the tempo, select **Tap tempo**, configure **Meter & sound**, then select **Start metronome**. Press Space while focus is outside a control to start or stop playback.
-- In **Tuner**, select **Use microphone**, allow microphone access, and play one clear note near the microphone. Select **Stop listening** when finished.
-- Change startup defaults under **Settings → Metronome + Tuner**.
+- **Metronome:** set the tempo or use **Tap tempo**, adjust **Meter & sound**, then select **Start metronome**.
+- **Tuner:** select **Use microphone**, allow access, and play one clear note near the microphone. Select **Stop listening** when you are done.
 
-## Commands
+## Configuration
 
-- **Open**
-- **Start metronome**
-- **Stop metronome**
+Startup defaults live under **Settings → Metronome + Tuner**: language (`auto` by default), tempo (120 BPM), time signature (4/4), accent (on), volume, click sound (woodblock) and the A4 reference (440 Hz). Obsidian saves them in the plugin's `data.json` in your vault.
 
-## Development
+## Build from source
 
 Node.js 24 or later is required.
 
 ```bash
 npm install
-npm run dev
+npm run dev     # watch the source and write main.js at the repository root
+npm run build   # production main.js
 ```
 
-`npm run dev` watches the source and writes `main.js` at the repository root.
+Other scripts:
 
-## Validation
+| Script | What it does |
+| --- | --- |
+| `npm run lint` | ESLint, including the Obsidian plugin rules. |
+| `npm test` | Vitest unit tests. |
+| `npm run typecheck` | TypeScript type check. |
+| `npm run build:clean` | Remove any existing `main.js`, then build. |
+| `npm run check` | Lint, tests, type check and a clean build. |
+| `npm run verify:release -- x.y.z` | `check`, then validate the version metadata and built files for that tag. |
 
-```bash
-npm run lint
-npm test
-npm run typecheck
-npm run build
-npm run build:clean
-npm run check
-npm run verify:release
-```
+### Releases
 
-`npm run build` writes a production `main.js`. `npm run build:clean` removes any existing `main.js` first. `npm run check` runs linting, tests, type checking, and a clean production build. `npm run verify:release` is the release gate: it runs `check`, then validates release metadata and the newly built artifacts. Pass a tag to check it locally, for example `npm run verify:release -- 1.0.0`.
-
-## Release process
-
-1. Set the same strict `x.y.z` version in `package.json`, `manifest.json`, and `versions.json`.
+1. Set the same `x.y.z` version in `package.json`, `manifest.json` and `versions.json` (`npm version` updates the last two).
 2. Run `npm run verify:release -- x.y.z`.
-3. Create and push an exact `x.y.z` tag. Do not add a `v` prefix.
-4. CI creates or updates a **draft** GitHub release. Review its assets and notes, then publish it manually.
+3. Push a tag named exactly `x.y.z`, without a `v` prefix.
+4. The release workflow builds the files and creates a draft GitHub release with `main.js`, `manifest.json` and `styles.css`. Check the draft, then publish it.
 
-Do not publish a generated draft without manual verification.
+## Project layout
 
-## Support and issues
+| Path | Contents |
+| --- | --- |
+| `src/main.ts` | Plugin entry, commands and ribbon icon. |
+| `src/view.ts` | The **Tempo & tune** view. |
+| `src/metronome/` | Scheduler, click synth, tap tempo and sound presets. |
+| `src/tuner/` | YIN pitch detector, note maths and the tuner controller. |
+| `src/audio/` | Shared audio runtime. |
+| `src/settings.ts`, `src/settingsParsing.ts` | Settings tab and validation. |
+| `src/i18n.ts`, `src/i18n/` | Translations and locale detection. |
+| `styles.css` | View styles. |
+| `tests/` | Vitest tests. |
 
-Questions or feedback? Email [patrick@subcult.tv](mailto:patrick@subcult.tv). Report bugs or request features in [Gitea Issues](https://git.subcult.tv/PatrickFanella/obsidian-plugin-metronome-tuner/issues).
+## Contributing
 
-## About SUBCULT and support
+Report bugs and request features in [GitHub issues](https://github.com/subculture-collective/obsidian-plugin-metronome-tuner/issues). Send code as pull requests on GitHub against `main`. CI runs `npm run check` (lint, tests, type check and a clean build) on every pull request. For anything else, email [patrick@subcult.tv](mailto:patrick@subcult.tv).
 
-<a href="https://subcult.tv">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/subcult-dark.svg">
-    <img src="docs/brand/subcult-light.svg" alt="SUBCULT" width="240">
-  </picture>
-</a>
+## License
 
-Made by [Patrick Fanella](https://patrickfanella.co) as part of
-[SUBCULT](https://subcult.tv). Explore the tools and projects at
-**[subcult.tv](https://subcult.tv)**.
-
-If this plugin is useful to you, **[support SUBCULT on Patreon](https://patreon.com/subcult)**
-to help fund its development and the wider project.
+[MIT](LICENSE). Made by Patrick Fanella as part of [SUBCULT](https://subcult.tv).
